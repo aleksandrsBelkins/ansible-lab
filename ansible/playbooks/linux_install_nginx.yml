@@ -1,0 +1,29 @@
+- name: Install and run Nginx
+  hosts: linux
+
+  tasks:
+    - name: Update package cache
+      apt:
+        update_cache: yes
+      when: ansible_os_family == "Debian"
+
+    - name: Install nginx
+      package:
+        name: nginx
+        state: present
+
+    - name: Start and enable nginx service
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+      register: nginx_service_result
+
+    - name: Verify nginx is running
+      assert:
+        that:
+          - nginx_service_result is succeeded
+          - nginx_service_result.state == "started"
+        fail_msg: "Nginx service failed to start"
+        success_msg: "Nginx is running successfully"
+

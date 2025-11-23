@@ -1,0 +1,20 @@
+
+- hosts: windows
+  vars:
+    users:
+      - aleksandrs
+      - alens
+      - vladislavs
+      - kristaps
+  tasks:
+    - name: Create users
+      win_user:
+        name: "{{ item }}"
+        password: "Ansible123!"
+        state: present
+      loop: "{{ users }}"
+      register: win_user_result
+    - name: Show user creation results
+      debug:
+        var: win_user_result.results
+

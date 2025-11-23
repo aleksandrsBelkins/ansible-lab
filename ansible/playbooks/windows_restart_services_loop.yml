@@ -1,0 +1,17 @@
+
+- hosts: windows
+  vars:
+    services:
+      - Spooler
+      - wuauserv
+  tasks:
+    - name: Restart Windows services
+      win_service:
+        name: "{{ item }}"
+        state: restarted
+      loop: "{{ services }}"
+      register: win_services_result
+    - name: Debug service restart result
+      debug:
+        var: win_services_result.results
+

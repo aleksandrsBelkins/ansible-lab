@@ -1,0 +1,84 @@
+---
+- name: Create users with random plain passwords
+  hosts: linux
+  become: true
+
+  vars:
+    users:
+      - aleksandrs
+      - alens
+      - vladislavs
+      - kristaps
+
+  tasks:
+    - name: Check if users already exist
+      getent:
+        database: passwd
+        key: "{{ item }}"
+      register: existing_users
+      loop: "{{ users }}"
+      failed_when: false
+
+    - name: Build list of users to create
+      set_fact:
+        users_to_create: "{{ users_to_create | default([]) + [item.item] }}"
+      loop: "{{ existing_users.results }}"
+      when: item.failed | default(false)
+
+    - name: Generate random passwords using tr
+      shell: "tr -dc 'A-Za-z0-9' </dev/urandom | head -c 12"
+      register: generated_passwords
+      loop: "{{ users_to_create | default([]) }}"
+      loop_control:
+        label: "{{ item }}"
+      when: users_to_create is defined and users_to_create | length > 0
+
+    - name: Build username:password map
+      set_fact:
+        user_passwords: "{{ user_passwords | default({}) | combine({ item.item: item.stdout }) }}"
+      loop: "{{ generated_passwords.results }}"
+      when: users_to_create is defined and users_to_create | length > 0
+
+    - name: Create users 
+      user:
+        name: "{{ item.key }}"
+        shell: /bin/bash
+        create_home: yes
+      loop: "{{ user_passwords | default({}) | dict2items }}"
+      register: user_creation_result
+      when: user_passwords is defined
+
+    - name: Verify users were created
+      assert:
+        that:
+          - user_creation_result is succeeded
+        fail_msg: "User creation failed"
+        success_msg: "All users created successfully"
+      when: user_passwords is defined
+
+    - name: Set passwords using chpasswd
+      shell: |
+        echo "{{ item.key }}:{{ item.value }}" | chpasswd
+      loop: "{{ user_passwords | default({}) | dict2items }}"
+      when: user_passwords is defined
+      no_log: true
+
+    - name: Force password change on first login
+      command: chage -d 0 {{ item.key }}
+      loop: "{{ user_passwords | default({}) | dict2items }}"
+      when: user_passwords is defined
+
+    - name: Save credentials (plain text)
+      copy:
+        dest: /root/generated_users.txt
+        mode: '0600'
+        content: |
+          {% for user, pass in user_passwords.items() %}
+          {{ user }} : {{ pass }}
+          {% endfor %}
+      when: user_passwords is defined
+
+    - name: Display creation summary
+      debug:
+        msg: "Created {{ users_to_create | default([]) | length }} new users. Skipped {{ users | length - (users_to_create | default([]) | length) }} existing users."
+

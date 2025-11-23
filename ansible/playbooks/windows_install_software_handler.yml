@@ -1,0 +1,21 @@
+
+- hosts: windows
+  vars:
+    software:
+      - notepadplusplus
+      - git
+  tasks:
+    - name: Install software using Chocolatey
+      win_chocolatey:
+        name: "{{ item }}"
+        state: present
+      loop: "{{ software }}"
+      register: choco_result
+      notify: Restart Spooler
+
+  handlers:
+    - name: Restart Spooler
+      win_service:
+        name: Spooler
+        state: restarted
+

@@ -1,0 +1,6 @@
+[linux]
+linux-client ansible_host=linux-client
+
+[windows]
+windows-client ansible_host=windows-client
+

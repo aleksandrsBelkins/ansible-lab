@@ -1,0 +1,15 @@
+
+- hosts: windows
+  vars:
+    src_file: files/test.txt
+    dest_file: C:\\Temp\\test.txt
+  tasks:
+    - name: Copy file to Windows Temp
+      win_copy:
+        src: "{{ src_file }}"
+        dest: "{{ dest_file }}"
+      register: win_copy_result
+    - name: Show copy result
+      debug:
+        var: win_copy_result
+

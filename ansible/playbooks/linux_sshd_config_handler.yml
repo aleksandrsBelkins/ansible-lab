@@ -1,0 +1,17 @@
+
+- hosts: linux
+  become: true
+  tasks:
+    - name: Replace "PermitRootLogin" in sshd_config
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: "^#?PermitRootLogin"
+        line: "PermitRootLogin yes"
+      notify: Restart SSH service
+
+  handlers:
+    - name: Restart SSH service
+      service:
+        name: ssh
+        state: reloaded
+

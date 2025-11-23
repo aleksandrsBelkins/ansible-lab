@@ -1,0 +1,15 @@
+
+- hosts: linux
+  vars:
+    file_src: "/root/ansible/files/test.txt"
+    file_dest: "/tmp/test.txt"
+  tasks:
+    - name: Copy file to /tmp
+      copy:
+        src: "{{ file_src }}"
+        dest: "{{ file_dest }}"
+      register: copy_result
+    - name: Show copy result
+      debug:
+        var: copy_result
+

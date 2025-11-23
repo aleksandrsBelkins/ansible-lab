@@ -1,0 +1,16 @@
+
+- hosts: linux
+  become: true
+  vars:
+    packages:
+      - htop
+      - curl
+      - tree
+      - vim
+  tasks:
+    - name: Install packages
+      apt:
+        name: "{{ packages }}"
+        state: present
+        update_cache: yes
+

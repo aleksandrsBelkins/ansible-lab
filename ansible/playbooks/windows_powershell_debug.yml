@@ -1,0 +1,10 @@
+
+- hosts: windows
+  tasks:
+    - name: Get Windows version with PowerShell
+      win_shell: "(Get-WmiObject Win32_OperatingSystem).Caption"
+      register: win_ver
+    - name: Show Windows version
+      debug:
+        msg: "Windows version: {{ win_ver.stdout }}"
+

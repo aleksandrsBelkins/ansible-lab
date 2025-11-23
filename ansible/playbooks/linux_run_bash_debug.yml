@@ -1,0 +1,10 @@
+
+- hosts: linux
+  tasks:
+    - name: Get disk usage info
+      shell: df -h
+      register: disk_usage
+    - name: Show disk usage output
+      debug:
+        var: disk_usage.stdout_lines
+

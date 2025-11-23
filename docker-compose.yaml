@@ -1,0 +1,33 @@
+services:
+  ansible-controller:
+    build: ./ansible-controller
+    container_name: ansible-controller
+    tty: true
+    volumes:
+      - ./ansible:/root/ansible
+      - ./keys/id_rsa:/root/.ssh/id_rsa:ro
+    networks:
+      - labnet
+
+  linux-client:
+    build:
+      context: ./linux-client
+    container_name: linux-client
+    tty: true
+    volumes:
+      - ./keys/id_rsa.pub:/root/.ssh/authorized_keys:ro
+    networks:
+      - labnet
+
+  windows-client:
+    build:
+      context: ./windows-client
+    container_name: windows-client
+    networks:
+      - labnet
+    command: cmd
+
+networks:
+  labnet:
+    driver: bridge
+
